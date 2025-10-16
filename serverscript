@@ -1,0 +1,18 @@
+--owner message
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local event = ReplicatedStorage:WaitForChild("OwnerJoinEvent")
+local OWNER_USERNAME = "subtogwromanroblox" --  Change this!
+
+Players.PlayerAdded:Connect(function(player)
+	if player.Name == OWNER_USERNAME then
+		local message = "👑 The game owner (" .. player.Name .. ") has joined the game!"
+
+		-- Fire to all clients (for GUI + chat)
+		event:FireAllClients(message)
+
+		print("[OwnerJoin] Fired message to clients:", message)
+	end
+end)
+-- put this inside serverscript and add a remote event named OwnerJoinEvent in replicated storage.
