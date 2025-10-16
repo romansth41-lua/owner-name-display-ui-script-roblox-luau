@@ -1,0 +1,104 @@
+--client message
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
+local StarterGui = game:GetService("StarterGui")
+local TextChatService = game:GetService("TextChatService")
+
+local event = ReplicatedStorage:WaitForChild("OwnerJoinEvent")
+local localPlayer = Players.LocalPlayer
+
+-- Send system message that works for BOTH chat systems
+local function showChatMessage(message)
+
+	local success, result = pcall(function()
+		if TextChatService and TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
+			local channel = TextChatService:FindFirstChild("TextChannels") and TextChatService.TextChannels:FindFirstChild("RBXGeneral")
+			if channel then
+				channel:DisplaySystemMessage(message)
+				return true
+			end
+		end
+	end)
+
+	-- Fallback for legacy chat (older system)
+	if not success or not result then
+		pcall(function()
+			StarterGui:SetCore("ChatMakeSystemMessage", {
+				Text = message,
+				Color = Color3.fromRGB(255, 215, 0),
+				Font = Enum.Font.GothamBold,
+				FontSize = Enum.FontSize.Size24,
+			})
+		end)
+	end
+end
+
+-- Keep your majestic banner exactly the same 😎
+local function showBanner(message)
+	local playerGui = localPlayer:WaitForChild("PlayerGui")
+
+	local gui = Instance.new("ScreenGui")
+	gui.Name = "OwnerJoinBanner"
+	gui.IgnoreGuiInset = true
+	gui.ResetOnSpawn = false
+	gui.Parent = playerGui
+
+	local frame = Instance.new("Frame")
+	frame.Size = UDim2.new(0.6, 0, 0.1, 0)
+	frame.Position = UDim2.new(0.2, 0, -0.1, 0)
+	frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+	frame.BackgroundTransparency = 0.15
+	frame.BorderSizePixel = 0
+	frame.Parent = gui
+
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, 16)
+	corner.Parent = frame
+
+	local stroke = Instance.new("UIStroke")
+	stroke.Thickness = 4
+	stroke.Color = Color3.fromRGB(255, 215, 0)
+	stroke.Parent = frame
+
+	local text = Instance.new("TextLabel")
+	text.Size = UDim2.new(1, -20, 1, -20)
+	text.Position = UDim2.new(0, 10, 0, 10)
+	text.BackgroundTransparency = 1
+	text.Text = message
+	text.TextColor3 = Color3.fromRGB(255, 223, 0)
+	text.TextScaled = true
+	text.Font = Enum.Font.GothamBold
+	text.TextTransparency = 1
+	text.Parent = frame
+
+	local shadow = Instance.new("ImageLabel")
+	shadow.AnchorPoint = Vector2.new(0.5, 0.5)
+	shadow.Position = UDim2.new(0.5, 0, 0.5, 6)
+	shadow.Size = UDim2.new(1.05, 0, 1.1, 0)
+	shadow.Image = "rbxassetid://1316045217"
+	shadow.ImageTransparency = 0.8
+	shadow.BackgroundTransparency = 1
+	shadow.ZIndex = 0
+	shadow.Parent = frame
+
+	frame:TweenPosition(UDim2.new(0.2, 0, 0.05, 0), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.5, true)
+	TweenService:Create(text, TweenInfo.new(0.5), {TextTransparency = 0}):Play()
+
+	TweenService:Create(stroke, TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, -1, true), {Thickness = 6}):Play()
+
+	task.wait(5)
+
+	local fadeOut = TweenService:Create(frame, TweenInfo.new(0.5), {BackgroundTransparency = 1})
+	local fadeText = TweenService:Create(text, TweenInfo.new(0.5), {TextTransparency = 1})
+	fadeOut:Play()
+	fadeText:Play()
+	task.wait(0.5)
+	gui:Destroy()
+end
+
+event.OnClientEvent:Connect(function(message)
+	showChatMessage(message)
+	showBanner(message)
+end)
+-- inside starterplayer < starterplayer scripts a local script:))
